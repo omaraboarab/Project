@@ -1,0 +1,69 @@
+---
+
+- name: install docker and compose
+  hosts: docker_server
+  become: yes
+  tasks:
+    - name : install docker
+      yum:
+        name: docker
+        update_cache: yes
+        state : present
+
+- name : start docker
+  hosts: docker_server
+  become: yes
+  tasks:
+    - name : start docker
+      systemd:
+        name : docker
+        state : started
+    - name: add ec2-user to dockerGroup
+      user:
+        name: ec2-user
+        groups: docker
+        append : yes
+    - name : reconnect to the server session
+      meta : reset_connection
+
+    - name : install Docker compose
+      get_url:
+        url: https://github.com/docker/compose/releases/latest/download/docker-compose-Linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: +x
+
+- name : docker pull nginx
+  hosts : docker_server
+  tasks :
+    - docker_image:
+        name: nginx
+        source: pull
+
+- name : copy app to ec2
+  hosts : docker_server
+  tasks :
+    - name : copy app
+      copy : 
+        src: ./docker-compose.yaml
+        dest : /home/ec2-user
+
+    - name: copy files
+      copy:
+        src: ./app
+        dest : /home/ec2-user
+
+    - name : start docker compose file
+      docker_container :
+        name : nginx
+        image : nginx
+        state : started
+
+    # - name : run app
+    #   docker_container :
+    #     name :  myapp
+    #     image : omaraboarab/appmig:2.0
+    #     state : started
+        
+    - name: Deploy Docker Compose
+      command : docker-compose -f docker-compose.yaml up -d
+

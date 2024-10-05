@@ -1,0 +1,3 @@
+[docker_server]
+
+3.88.168.155 ansible_ssh_private_key_file=/home/omaraboarab/utility/Develop-with-docker/depkey.pem ansible_user=ec2-user
