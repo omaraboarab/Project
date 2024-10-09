@@ -28,5 +28,15 @@ sh '''
 }
 
 }
-
+ post {
+        success {
+            slackSend (channel: 'jenkins', message: "Pipeline succeeded: ${env.JOB_NAME} #${env.BUILD_NUMBER}")
+        }
+        failure {
+            slackSend (channel: 'jenkins', message: "Pipeline failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}")
+        }
+        always {
+            slackSend (channel: 'jenkins', message: "Pipeline finished: ${env.JOB_NAME} #${env.BUILD_NUMBER}")
+        }
+    }
 }
